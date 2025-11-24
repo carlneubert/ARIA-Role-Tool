@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ARIA Role Helper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <a href="#app-main" class="skip-link">Skip to main content</a>
+
+  <main class="app-shell" id="app-main">
+    <header>
+      <div>
+        <h1>
+          <span>ARIA Role Helper</span>
+        </h1>
+        <p>Paste your custom widget markup and we’ll inspect roles, suggest improvements, and show where to add them.</p>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          id="themeToggle"
+          class="theme-toggle"
+          aria-pressed="false"
+          aria-label="Switch to light mode"
+        >
+          <span class="theme-toggle-track" aria-hidden="true">
+            <span class="theme-toggle-thumb"></span>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <section class="layout" aria-label="ARIA helper playground">
+
+      <!-- INPUT PANEL -->
+      <section class="panel" aria-label="Input">
+        <div class="input-block">
+          <h2 class="section-title">Paste your code snippet</h2>
+          <textarea id="snippet" spellcheck="false"
+            aria-describedby="snippetTip"
+            placeholder="<div class=&quot;btn&quot;>Save</div>"></textarea>
+        </div>
+
+        <div class="helper-row">
+          <span id="snippetTip">Tip: Use semantic HTML first. ARIA is a last resort.</span>
+        </div>
+      </section>
+
+      <!-- OUTPUT PANEL -->
+      <section class="panel" aria-label="Suggestion">
+        <h3>Suggested role</h3>
+
+        <div id="roleChips" class="role-chips" aria-live="polite"></div>
+
+        <div id="roleSummary" class="empty-state">
+          Paste a snippet that includes <code>role="…"</code> to see details about that role.
+        </div>
+
+        <div id="codeSuggestion" class="empty-state">
+          We'll highlight any <code>role="…"</code> attributes we find in your snippet.
+        </div>
+
+
+        <h3>ARIA states &amp; properties</h3>
+        <div id="ariaStatesReport" class="empty-state">
+          When your snippet includes <code>aria-*</code> attributes, we'll list them here and call out common issues.
+        </div>
+
+        <h3>Fixed code</h3>
+        <div id="fixedCode" class="empty-state">
+          When we detect issues or missing roles/ARIA attributes, we'll generate a corrected version of your snippet here.
+        </div>
+
+        <h3>ARIA issues</h3>
+        <div id="smellReport" class="empty-state">
+          Paste code to see quick ARIA smell checks.
+        </div>
+      </section>
+    </section>
+
+    <footer class="app-footer">
+      <span>Built by Carl Neubert · Quick ARIA checks. HTML first, ARIA as a last resort.</span>
+      <span>
+        Learn more about ARIA roles on
+        <a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles" target="_blank" rel="noreferrer">
+          MDN ↗
+        </a>
+      </span>
+    </footer>
+  </main>
+
+  <!-- External JS -->
+  <script src="script.js" defer></script>
+</body>
+</html>
