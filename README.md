@@ -110,6 +110,67 @@ Test snippets you can use:
 
 ---
 
+## 🧪 Regression Test Suite
+
+Use these snippets to verify that role detection, ARIA state detection, suggested roles, automatic fixing, change logs, and UI rendering continue to work after refactoring.
+
+### **A. Redundant Roles & Basic Fixers**
+```
+<button role="button">Save</button>
+
+<div role="switch" id="dark-toggle">Dark mode</div>
+
+<div role="checkbox" id="opt-in">Email updates</div>
+
+<div role="slider" id="volume">Volume</div>
+
+<nav role="navigation">
+  <a href="/" role="link">Home</a>
+</nav>
+```
+
+### **B. Implicit vs Explicit Role Suggestions**
+```
+<button type="button">Click me</button>
+```
+```
+<div role="tab">Overview</div>
+```
+
+### **C. Structural Smells (Parent/Child Roles)**
+```
+<div role="tab">Overview</div>
+<div role="tabpanel">Overview panel</div>
+```
+```
+<div role="menuitem">Item 1</div>
+<div role="menuitem">Item 2</div>
+```
+
+### **D. ARIA State Pairing**
+```
+<div role="switch" aria-expanded="true">Toggle</div>
+```
+```
+<div role="slider" aria-valuemin="10">Volume</div>
+```
+
+### **E. Custom Interactive Component**
+```
+<div class="btn" onclick="save()">Save changes</div>
+```
+
+### **F. Light/Dark Mode Visual Check**
+```
+<button type="button">Click me</button>
+<div role="switch" aria-checked="true">Dark mode</div>
+<div role="slider" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7">Volume</div>
+```
+
+This suite ensures coverage of redundant roles, ARIA state fixes, structural warnings, implicit/explicit role mapping, light/dark mode styling, and corrected code generation.
+
+---
+
 ## 👨‍💻 Author
 
 Created by **Carl Neubert**  
