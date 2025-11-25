@@ -214,7 +214,9 @@ textarea {
   min-height: 160px;
   max-height: 420px;
   overflow: auto;
-  white-space: pre;       /* preserve formatting, no wrapping */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   line-height: 1.4;
 }
 
@@ -348,9 +350,37 @@ pre {
   font-size:.8rem;
   max-width: 100%;        /* fixed to container width */
   max-height: 420px;
-  white-space: pre;        /* preserve formatting, no wrapping */
-  overflow-x: auto;        /* horizontal scroll inside the box */
-  overflow-y: auto;        /* vertical scroll if needed */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: auto;
+}
+
+/* ---- CUSTOM SCROLLBARS ---- */
+/* Firefox */
+textarea,
+pre {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+
+/* WebKit-based (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 999px;
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
 }
 
 .highlight-role {
