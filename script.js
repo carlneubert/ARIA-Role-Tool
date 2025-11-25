@@ -865,6 +865,24 @@ function generateFixedCode(snippet) {
     }
   );
 
+  // Fourth pass: add role="tablist" to containers that wrap elements with role="tab"
+  fixed = fixed.replace(
+    /<([a-z0-9:-]+)\b([^>]*)>([\s\S]*?\brole\s*=\s*["']tab["'][\s\S]*?<\/\1>)/gi,
+    (full, tagName, attrs, inner) => {
+      // If the container already has a role, leave it alone
+      if (/\brole\s*=\s*["'][^"']*["']/i.test(attrs)) {
+        return full;
+      }
+
+      const newAttrs = `${attrs} role="tablist"`;
+      changes.push(
+        `Added <code>role="tablist"</code> to <code>&lt;${tagName.toLowerCase()}&gt;</code> that wraps elements with <code>role="tab"</code>.`
+      );
+
+      return `<${tagName}${newAttrs}>${inner}`;
+    }
+  );
+
   lastFixLog = changes;
   return fixed;
 }
@@ -1044,16 +1062,9 @@ function updateUI() {
     implicitRoles = [...new Set(implicitRoles)];
   }
 
-  // Update chips based on explicit → implicit fallback
+  // Original role chips row no longer needed now that the primary role pill shows the main role.
   if (roleChipsEl) {
-    if (!uniqueRoles.length && !implicitRoles.length) {
-      roleChipsEl.innerHTML = "";
-    } else {
-      const chipRoles = uniqueRoles.length ? uniqueRoles : implicitRoles;
-      roleChipsEl.innerHTML = chipRoles
-        .map((name) => `<span class="role-chip">${escapeHtml(name)}</span>`)
-        .join("");
-    }
+    roleChipsEl.innerHTML = "";
   }
 
   // Suggested role summary block
@@ -1075,10 +1086,17 @@ function updateUI() {
           : "";
 
         roleSummaryEl.innerHTML = `
-          <div class="role-pill">
-            <span class="label">implicit role</span>
-            <code>${implicitRole.name}</code>
-          </div>
+          ${
+            implicitRole.mdnUrl
+              ? `<a class="role-pill role-pill-link" href="${implicitRole.mdnUrl}" target="_blank" rel="noreferrer">
+                   <span class="label">implicit role</span>
+                   <code>${implicitRole.name}</code>
+                 </a>`
+              : `<div class="role-pill">
+                   <span class="label">implicit role</span>
+                   <code>${implicitRole.name}</code>
+                 </div>`
+          }
           <p class="description">${implicitRole.description}</p>
           <div class="role-meta">
             <span class="chip">${implicitRole.category}</span>
@@ -1089,15 +1107,6 @@ function updateUI() {
           <p class="description" style="margin-top:0.6rem;">
             This role comes from the native HTML element. You usually don't need to explicitly set <code>role="${implicitRole.name}"</code>.
           </p>
-          ${
-            implicitRole.mdnUrl
-              ? `<p class="description">
-                  <a class="mdn-link" href="${implicitRole.mdnUrl}" target="_blank" rel="noreferrer">
-                    Read MDN docs for <code>${implicitRole.name}</code> ↗
-                  </a>
-                </p>`
-              : ""
-          }
         `;
       } else {
         roleSummaryEl.innerHTML = `
@@ -1126,10 +1135,17 @@ function updateUI() {
       : "";
 
     roleSummaryEl.innerHTML = `
-      <div class="role-pill">
-        <span class="label">role</span>
-        <code>${primaryRole.name}</code>
-      </div>
+      ${
+        primaryRole.mdnUrl
+          ? `<a class="role-pill role-pill-link" href="${primaryRole.mdnUrl}" target="_blank" rel="noreferrer">
+               <span class="label">role</span>
+               <code>${primaryRole.name}</code>
+             </a>`
+          : `<div class="role-pill">
+               <span class="label">role</span>
+               <code>${primaryRole.name}</code>
+             </div>`
+      }
       <p class="description">${primaryRole.description}</p>
       <div class="role-meta">
         <span class="chip">${primaryRole.category}</span>
@@ -1140,15 +1156,6 @@ function updateUI() {
       <p class="description" style="margin-top:0.6rem;">
         Prefer native HTML where possible. Only use this ARIA role when you can't use the semantic element.
       </p>
-      ${
-        primaryRole.mdnUrl
-          ? `<p class="description">
-              <a class="mdn-link" href="${primaryRole.mdnUrl}" target="_blank" rel="noreferrer">
-                Read MDN docs for <code>${primaryRole.name}</code> ↗
-              </a>
-            </p>`
-          : ""
-      }
     `;
   } else {
     // Roles found but not in dataset
@@ -1181,30 +1188,107 @@ function updateUI() {
   // Populate Fixed code section with a first-pass fixed version of the snippet
   if (fixedCodeEl) {
     const fixed = generateFixedCode(rawSnippet);
-    const output = escapeHtml(fixed || rawSnippet);
+    const hasFixes = Array.isArray(lastFixLog) && lastFixLog.length > 0;
 
-    let changeLogHtml = "";
-    if (Array.isArray(lastFixLog) && lastFixLog.length) {
-      changeLogHtml = `
-        <div class="change-log">
-          <p class="description" style="margin-top:0.75rem;">Changes suggested for this snippet:</p>
-          <ul class="aria-list">
-            ${lastFixLog.map((msg) => `<li>${msg}</li>`).join("")}
-          </ul>
+    if (!hasFixes) {
+      fixedCodeEl.classList.add("empty-state");
+      fixedCodeEl.innerHTML = `
+        <div class="empty-state">
+          No automatic fixes were applied. Your ARIA usage may already be in good shape, or only advisory issues were found.
         </div>`;
     } else {
-      changeLogHtml = `
-        <div class="empty-state" style="margin-top:0.75rem;">
-          No automatic fixes applied. Your ARIA usage may already be in good shape, or only advisory issues were found.
-        </div>`;
-    }
+      const output = escapeHtml(fixed);
 
-    fixedCodeEl.classList.remove("empty-state");
-    fixedCodeEl.innerHTML = `
-      <label>Fixed code (preview)</label>
-      <pre>${output}</pre>
-      ${changeLogHtml}
-    `;
+      const changeLogHtml = `
+        <section class="change-log" aria-labelledby="changeLogToggle">
+          <button
+            type="button"
+            class="change-log-toggle"
+            id="changeLogToggle"
+            aria-expanded="false"
+            aria-controls="changeLogPanel"
+          >
+            View suggested changes
+          </button>
+          <div
+            id="changeLogPanel"
+            class="change-log-panel"
+            hidden
+          >
+            <p class="description" style="margin-top:0.75rem;">Changes suggested for this snippet:</p>
+            <ul class="aria-list">
+              ${lastFixLog.map((msg) => `<li>${msg}</li>`).join("")}
+            </ul>
+          </div>
+        </section>`;
+
+      fixedCodeEl.classList.remove("empty-state");
+      fixedCodeEl.innerHTML = `
+        <label for="fixedCodePre">Fixed code (preview)</label>
+        <div class="fixed-code-wrapper">
+          <button
+            type="button"
+            class="copy-fixed-btn"
+            aria-label="Copy fixed code to clipboard"
+          >
+            Copy
+          </button>
+          <pre id="fixedCodePre">${output}</pre>
+        </div>
+        ${changeLogHtml}
+      `;
+
+      const changeLogToggle = fixedCodeEl.querySelector(".change-log-toggle");
+      const changeLogPanel = fixedCodeEl.querySelector(".change-log-panel");
+
+      if (changeLogToggle && changeLogPanel) {
+        changeLogToggle.addEventListener("click", () => {
+          const isExpanded = changeLogToggle.getAttribute("aria-expanded") === "true";
+          changeLogToggle.setAttribute("aria-expanded", String(!isExpanded));
+          changeLogPanel.hidden = isExpanded;
+        });
+      }
+
+      const copyFixedBtn = fixedCodeEl.querySelector(".copy-fixed-btn");
+      const fixedPre = fixedCodeEl.querySelector("#fixedCodePre");
+
+      if (copyFixedBtn && fixedPre) {
+        copyFixedBtn.addEventListener("click", async () => {
+          const code = fixedPre.textContent || "";
+          const originalText = copyFixedBtn.textContent;
+
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(code);
+            } else {
+              const ta = document.createElement("textarea");
+              ta.value = code;
+              ta.setAttribute("readonly", "");
+              ta.style.position = "absolute";
+              ta.style.left = "-9999px";
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+            }
+
+            copyFixedBtn.textContent = "Copied";
+            copyFixedBtn.setAttribute("aria-label", "Fixed code copied to clipboard");
+            setTimeout(() => {
+              copyFixedBtn.textContent = originalText;
+              copyFixedBtn.setAttribute("aria-label", "Copy fixed code to clipboard");
+            }, 2000);
+          } catch (e) {
+            copyFixedBtn.textContent = "Error";
+            copyFixedBtn.setAttribute("aria-label", "Copy failed");
+            setTimeout(() => {
+              copyFixedBtn.textContent = originalText;
+              copyFixedBtn.setAttribute("aria-label", "Copy fixed code to clipboard");
+            }, 2000);
+          }
+        });
+      }
+    }
   }
 
   updateAriaStates(rawSnippet);

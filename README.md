@@ -83,6 +83,27 @@ lastFixLog
 
 so the user can see the resulting change.
 
+### 🔧 Recently Added Fixers
+
+#### **1. Smart Tablist Auto‑Fix**
+A new structural fixer was added that detects when an element contains one or more children with `role="tab"` but does **not** itself declare a role. In these cases, the tool now:
+- Automatically adds `role="tablist"` to the wrapping element
+- Records the change in the change log
+- Ensures the ARIA tab/tabpanel pattern is more correctly modeled
+
+This upgrade allows the tool to intelligently promote containers that behave like tablists without requiring developers to manually add the role.
+
+#### **2. Show Fixed Code Only When Fixes Exist**
+Previously, the “Fixed code (preview)” panel always appeared—even when no modifications were made. This was confusing for users.
+
+Current behavior:
+- If **no fixes** were applied, the tool now shows a simple message:
+  > *“No automatic fixes were applied…”*
+- The fixed code block and copy‑to‑clipboard button are hidden
+- If **fixes do exist**, the full preview, GitHub‑style copy button, and change log accordion are displayed
+
+This makes the output more intuitive and reinforces when the autofixer actually made improvements.
+
 ---
 
 ## 🧪 Testing
@@ -186,6 +207,8 @@ Role helper tool for experimenting with ARIA, accessibility smell checking, and 
 Planned enhancements for future versions of the ARIA Role Helper:
 
 ### **🔹 Additional Fixers**
+- ✓ Auto-add `role="tablist"` when wrapping elements with `role="tab"`
+- ✓ Only show fixed code when actual autofixes were applied
 - Auto-add `aria-expanded` based on detected disclosure patterns  
 - Normalize `aria-pressed` usage on toggle buttons  
 - Validate required child roles (`tab` → `tabpanel`, `listbox` → `option`, etc.)  
@@ -193,6 +216,7 @@ Planned enhancements for future versions of the ARIA Role Helper:
 - Add support for landmark role suggestions (e.g., `banner`, `contentinfo`, `main`)  
 
 ### **🔹 Smarter Role Suggestions**
+- ✓ Improved structural detection for tab/tabpanel relationships
 - Detect whether the component behaves like a button, toggle, or menu trigger  
 - Analyze text content and event attributes (e.g., `onclick`, keyboard handlers)  
 - Provide multiple suggested roles when appropriate
