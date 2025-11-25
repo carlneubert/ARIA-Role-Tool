@@ -1,0 +1,25 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": ["warn"],
+    "no-undef": ["error"],
+    "no-var": ["error"],
+    "prefer-const": ["warn"],
+    "eqeqeq": ["warn", "always"],
+    "no-console": ["off"]
+  },
+  "globals": {
+    "detectSmells": "readonly",
+    "generateFixedCode": "readonly",
+    "getImplicitRoleForTag": "readonly",
+    "updateUI": "readonly"
+  }
+}
