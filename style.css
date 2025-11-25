@@ -377,6 +377,8 @@ pre {
 ::-webkit-scrollbar-thumb {
   background-color: #4b5563;
   border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 html[data-theme="light"] ::-webkit-scrollbar-thumb {
