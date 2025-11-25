@@ -269,11 +269,11 @@ If you want to extend this tool:
 
 1. All ARIA logic lives inside `script.js`  
 2. The key functions to understand are:
-   - `detectRoles()`
-   - `detectSmells()`
-   - `detectStates()`
-   - `generateRoleSuggestions()`
-   - **`generateFixedCode()` ← most fixer logic lives here**
+   - `detectSmells(snippet)` – runs ARIA heuristics and returns human-readable “smell” messages
+   - `generateFixedCode(snippet)` – applies conservative autofixes and records a change log in `lastFixLog`
+   - `getImplicitRoleForTag(tagText, tagName)` – infers implicit roles from native HTML elements
+   - `extractAriaAttributes(snippet)` – pulls out `aria-*` attributes for reporting
+   - `detectRoleStructureIssues(snippet, smells)` – flags parent/child role relationship problems
 3. When adding a new auto-fix:
    - Insert logic inside `generateFixedCode()`
    - Push human-readable explanations into `lastFixLog`
@@ -283,6 +283,27 @@ Please keep contributions:
 - Focused on usability  
 - WCAG & ARIA-compliant  
 - Transparent about what is auto-modified
+
+### 🧱 Adding a New ARIA Rule
+
+To add a new ARIA rule (a new “smell”):
+
+1. Open `script.js` and find `detectSmells(snippet)`.
+2. Decide what you want to check (e.g., “icon-only buttons without labels”, “elements with both `aria-label` and `aria-labelledby`”, etc.).
+3. Add a small detection block that:
+   - Uses simple string/regex checks on the `snippet`
+   - Pushes a clear, human-readable message into `smells`
+   - Wraps any relevant attributes/roles in `<code>…</code>` so the UI can highlight them
+4. If the rule should have a visual highlight in the code preview:
+   - Make sure the message includes the exact attribute or role name wrapped in `<code>`
+   - The highlighter will pick it up and apply the correct CSS class
+5. If the rule should also have an autofix:
+   - Add a corresponding fixer in `generateFixedCode(snippet)`
+   - Make the change minimal and conservative (no large rewrites)
+   - Push a short explanation into `lastFixLog` so the change appears in the change log accordion
+6. Add a small snippet to the “🧪 Regression Test Suite” in this README that exercises the new rule.
+
+This keeps rules easy to reason about, easy to review, and easy to extend over time.
 
 ---
 

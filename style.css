@@ -80,6 +80,10 @@ html[data-theme="light"] body {
   z-index: 10;
 }
 
+html[data-theme="light"] .skip-link {
+  color: #f9fafb; /* ensure high contrast against the dark skip-link background in light mode */
+}
+
 .skip-link:focus {
   transform: translateY(0);
   outline: 2px solid var(--accent-soft);
@@ -167,8 +171,8 @@ header h1 {
 
 /* Section dividers inside panels */
 .panel h3 {
-  margin: 1rem 0 0.4rem;
-  padding-top: 0.8rem;
+  margin: 0.8rem 0 0.35rem;
+  padding-top: 0.6rem;
   border-top: 1px solid var(--border-subtle);
   letter-spacing: 0.05em;
   font-family: var(--font-heading);
@@ -247,6 +251,11 @@ textarea:focus {
   box-shadow: 0 0 0 1px rgba(241, 196, 15, 0.2);
 }
 
+.role-chip:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
 /* Primary suggested role pill */
 .role-pill {
   display: inline-flex;
@@ -305,10 +314,10 @@ html[data-theme="light"] .role-pill {
 }
 
 .description {
-  font-size: 0.95rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.6rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.7;
   color: var(--text);
 }
 
@@ -435,6 +444,7 @@ html[data-theme="light"] .highlight-aria-error {
   margin-top: .4rem;
   padding-left: 1.2rem;
   color: var(--text);
+  line-height: 1.6;
 }
 
 /* ---- CHANGE LOG LIST ---- */
@@ -479,6 +489,10 @@ html[data-theme="light"] .highlight-aria-error {
   content: "▾";
 }
 
+.change-log-toggle:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
 
 .change-log-toggle:hover,
 .change-log-toggle:focus-visible {
@@ -524,6 +538,11 @@ html[data-theme="light"] .change-log-toggle:focus-visible {
   transition: background 0.15s ease-out, border-color 0.15s ease-out;
 }
 
+.copy-fixed-btn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
 .copy-fixed-btn:hover,
 .copy-fixed-btn:focus-visible {
   background: #4b5563;
@@ -553,6 +572,7 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
   margin-top: 0.6rem;
 }
 
+
 .copy-row button {
   border-radius: 999px;
   border: none;
@@ -561,6 +581,11 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
   color: var(--button-text);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
+}
+
+.copy-row button:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
 }
 
 .copy-row button:hover {
@@ -600,12 +625,17 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
 }
 
 html[data-theme="light"] .app-footer a {
-  color: var(--accent);
+  color: #92400e; /* darker accent for better contrast on light backgrounds */
 }
 
 html[data-theme="light"] .app-footer a:hover,
 html[data-theme="light"] .app-footer a:focus {
-  color: var(--accent-soft);
+  color: #7c2d12; /* even darker for strong contrast on light backgrounds */
+}
+
+.app-footer a:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
 }
 
 /* ---- MDN LINK STYLES ---- */
@@ -622,12 +652,17 @@ html[data-theme="light"] .app-footer a:focus {
 }
 
 html[data-theme="light"] .mdn-link {
-  color: var(--accent);
+  color: #92400e;
 }
 
 html[data-theme="light"] .mdn-link:hover,
 html[data-theme="light"] .mdn-link:focus {
-  color: var(--accent-soft);
+  color: #7c2d12;
+}
+
+.mdn-link:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
 }
 
 /* ---- LAYOUT GRID ---- */
@@ -697,6 +732,7 @@ label {
   margin-top: .4rem;
   padding-left: 1.2rem;
   color: var(--text);
+  line-height: 1.6;
 }
 
 /* ---- ISSUES LIST ---- */
@@ -705,6 +741,7 @@ label {
   padding-left: 1.2rem;
   font-size: 0.9rem;
   color: var(--text);
+  line-height: 1.6;
 }
 
 .smell-list li {
@@ -721,6 +758,11 @@ label {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
 }
 
 .theme-toggle-track {
@@ -756,6 +798,11 @@ label {
 }
 
 .role-pill-link:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.role-pill:focus-visible {
   outline: 2px solid var(--accent-soft);
   outline-offset: 2px;
 }

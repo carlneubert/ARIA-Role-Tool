@@ -723,14 +723,10 @@ function detectRoleStructureIssues(snippet, smells) {
 // Runs a series of lightweight ARIA heuristics over the snippet and returns
 // an array of human‑readable messages describing potential issues.
 // Pure function: does not modify the DOM and safe to call repeatedly.
-function detectSmells(snippet) {
-  const smells = [];
-  if (!snippet) return smells;
 
-  const lower = snippet.toLowerCase();
-
-  // role="presentation"/"none" on focusable elements
-  const presentationalRegex = /<([a-z0-9:-]+)\b[^>]*\brole\s*=\s*["'](presentation|none)["'][^>]*>/gi;
+function addRoleSemanticsSmells(snippet, lower, smells) {
+  const presentationalRegex =
+    /<([a-z0-9:-]+)\b[^>]*\brole\s*=\s*["'](presentation|none)["'][^>]*>/gi;
   let pres;
   while ((pres = presentationalRegex.exec(snippet)) !== null) {
     const tagText = pres[0].toLowerCase();
@@ -745,8 +741,9 @@ function detectSmells(snippet) {
       break;
     }
   }
+}
 
-  // Mouse-only handlers on non-interactive elements
+function addInteractionSmells(snippet, lower, smells) {
   const clickAttrRegex =
     /<([a-z0-9:-]+)\b[^>]*\b(onclick|onmousedown|onmouseup)\s*=\s*["'][^"']*["'][^>]*>/gi;
   let clickMatch;
@@ -767,7 +764,6 @@ function detectSmells(snippet) {
     }
   }
 
-  // aria-expanded without aria-controls
   const expandedRegex =
     /<([a-z0-9:-]+)\b[^>]*\baria-expanded\s*=\s*["'](true|false)["'][^>]*>/gi;
   let expandedMatch;
@@ -782,7 +778,6 @@ function detectSmells(snippet) {
     }
   }
 
-  // role="tab" with aria-expanded instead of aria-selected
   const tabExpandedRegex =
     /<([a-z0-9:-]+)\b[^>]*\brole\s*=\s*["']tab["'][^>]*\baria-expanded\s*=\s*["'](true|false)["'][^>]*>/gi;
   if (tabExpandedRegex.test(snippet)) {
@@ -791,7 +786,6 @@ function detectSmells(snippet) {
     );
   }
 
-  // role="dialog" without aria-modal
   if (
     /\brole\s*=\s*["']dialog["']/.test(lower) &&
     !/\baria-modal\s*=\s*["'](true|false)["']/.test(lower)
@@ -801,7 +795,6 @@ function detectSmells(snippet) {
     );
   }
 
-  // role="switch" without aria-checked
   if (
     /\brole\s*=\s*["']switch["']/.test(lower) &&
     !/\baria-checked\s*=\s*["'](true|false)["']/.test(lower)
@@ -810,8 +803,9 @@ function detectSmells(snippet) {
       'Element with <code>role="switch"</code> is missing <code>aria-checked</code>. Switches should expose their on/off state.'
     );
   }
+}
 
-  // aria-label / aria-labelledby on non-semantic containers without a role
+function addAccessibleNameSmells(snippet, smells) {
   const tagRegex = /<([a-z0-9:-]+)\b[^>]*>/gi;
   let tagMatch;
   while ((tagMatch = tagRegex.exec(snippet)) !== null) {
@@ -826,14 +820,12 @@ function detectSmells(snippet) {
     const hasExplicitRole = /\brole\s*=\s*["'][^"']*["']/.test(lowerTag);
     const implicit = getImplicitRoleForTag(tagText, tagName);
 
-    // If there's no explicit role and no implicit role, flag this as a potential misuse
     if (!hasExplicitRole && !implicit) {
       smells.push(
         `Element <code>&lt;${tagName}&gt;</code> has <code>aria-label</code> or <code>aria-labelledby</code> but no semantic role. Consider adding a role or using a native element (for example, <code>&lt;button&gt;</code>, <code>&lt;nav&gt;</code>, or <code>&lt;main&gt;</code>).`
       );
     }
 
-    // Step 3: detect elements that use BOTH aria-label and aria-labelledby
     if (hasAriaLabel && hasAriaLabelledby) {
       smells.push(
         `Element <code>&lt;${tagName}&gt;</code> uses <code>aria-label</code> and <code>aria-labelledby</code> together. Elements should have a single accessible name source; choose one.`
@@ -841,7 +833,6 @@ function detectSmells(snippet) {
     }
   }
 
-  // Empty aria-label or aria-labelledby (Step 2)
   const emptyAriaRegex = /\b(aria-label|aria-labelledby)\s*=\s*["']\s*["']/gi;
   let emptyMatch;
   while ((emptyMatch = emptyAriaRegex.exec(snippet)) !== null) {
@@ -851,7 +842,6 @@ function detectSmells(snippet) {
     );
   }
 
-  // Native <button> without an accessible name (no text, no aria-label/labelledby, no title)
   const buttonRegex = /<button\b([^>]*)>([\s\S]*?)<\/button>/gi;
   let buttonMatch;
   while ((buttonMatch = buttonRegex.exec(snippet)) !== null) {
@@ -863,7 +853,6 @@ function detectSmells(snippet) {
     const hasAriaLabelledby = /\baria-labelledby\s*=\s*["'][^"']*["']/.test(attrsLower);
     const hasTitle = /\btitle\s*=\s*["'][^"']*["']/.test(attrsLower);
 
-    // Strip out any nested tags (e.g., <svg>, <img>) and whitespace to see if there's real text content
     const innerWithoutTags = inner.replace(/<[^>]+>/g, "");
     const innerText = innerWithoutTags.replace(/\s+/g, "");
     const hasVisibleText = innerText.length > 0;
@@ -875,7 +864,6 @@ function detectSmells(snippet) {
     }
   }
 
-  // Unlabeled interactive elements on generic containers (Step 1)
   const interactiveTagRegex = /<([a-z0-9:-]+)\b[^>]*>/gi;
   let interactiveMatch;
   const interactiveRolesNeedingName = [
@@ -902,7 +890,6 @@ function detectSmells(snippet) {
     const roleName = (roleMatch[1] || "").trim().toLowerCase();
     if (!interactiveRolesNeedingName.includes(roleName)) continue;
 
-    // Skip native interactive elements that already have strong semantics
     const nativeInteractiveTags = ["button", "a", "input", "textarea", "select", "option"];
     if (nativeInteractiveTags.includes(tagName)) continue;
 
@@ -916,9 +903,21 @@ function detectSmells(snippet) {
       );
     }
   }
+}
+
+function detectSmells(snippet) {
+  const smells = [];
+  if (!snippet) return smells;
+
+  const lower = snippet.toLowerCase();
+
+  addRoleSemanticsSmells(snippet, lower, smells);
+  addInteractionSmells(snippet, lower, smells);
+  addAccessibleNameSmells(snippet, smells);
 
   validateAriaAgainstRoles(snippet, smells);
   detectRoleStructureIssues(snippet, smells);
+
   return smells;
 }
 
