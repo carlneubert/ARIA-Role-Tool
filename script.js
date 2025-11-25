@@ -1319,9 +1319,8 @@ function getCurrentTheme() {
 }
 
 function initThemeToggle() {
-  // Start in dark mode by default unless data-theme="light" is already set
-  const initial = getCurrentTheme();
-  applyTheme(initial);
+  // Start in light mode by default
+  applyTheme("light");
 
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener("click", () => {
