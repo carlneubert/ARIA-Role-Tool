@@ -395,6 +395,18 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb {
   border-bottom: 1px dotted #38bdf8;
 }
 
+.highlight-aria-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 3px;
+  padding: 0 0.1em;
+}
+
+html[data-theme="light"] .highlight-aria-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
 /* ---- ARIA LIST FIXES ---- */
 
 .aria-list li {

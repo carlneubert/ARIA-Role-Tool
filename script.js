@@ -1,3 +1,26 @@
+// -----------------------------------------------------------------------------
+// ARIA Role Tool — Architecture Overview
+// -----------------------------------------------------------------------------
+// This file contains three main layers:
+//
+// 1. Reference Data
+//    - ARIA_ROLES: full role metadata (name, category, mdn URL, hints)
+//    - ARIA_STATE_HINTS, ROLE_REQUIRED_ARIA, ROLE_DISCOURAGED_ARIA
+//    These power role lookup, suggestions, and validation.
+//
+// 2. ARIA Logic (Pure Functions)
+//    - detectSmells(): runs all ARIA heuristics; returns issues
+//    - generateFixedCode(): applies conservative autofixes + logs changes
+//    - helper functions (getImplicitRoleForTag, extractAriaAttributes, etc.)
+//    These DO NOT touch the DOM.
+//
+// 3. UI Layer
+//    - updateUI(): orchestrates detection + DOM updates
+//    - updateAriaStates() / updateAriaIssues(): panel rendering
+//    - theme toggle + copy-to-clipboard logic
+//
+// The goal: keep ARIA logic pure & reusable, keep DOM work isolated.
+// -----------------------------------------------------------------------------
 console.log("ARIA Role Helper script loaded");
 
 // All non-abstract WAI-ARIA roles (MDN-ish list)
@@ -697,6 +720,9 @@ function detectRoleStructureIssues(snippet, smells) {
   }
 }
 
+// Runs a series of lightweight ARIA heuristics over the snippet and returns
+// an array of human‑readable messages describing potential issues.
+// Pure function: does not modify the DOM and safe to call repeatedly.
 function detectSmells(snippet) {
   const smells = [];
   if (!snippet) return smells;
@@ -785,6 +811,112 @@ function detectSmells(snippet) {
     );
   }
 
+  // aria-label / aria-labelledby on non-semantic containers without a role
+  const tagRegex = /<([a-z0-9:-]+)\b[^>]*>/gi;
+  let tagMatch;
+  while ((tagMatch = tagRegex.exec(snippet)) !== null) {
+    const tagText = tagMatch[0];
+    const tagName = tagMatch[1].toLowerCase();
+    const lowerTag = tagText.toLowerCase();
+
+    const hasAriaLabel = /\baria-label\s*=\s*["'][^"']*["']/.test(lowerTag);
+    const hasAriaLabelledby = /\baria-labelledby\s*=\s*["'][^"']*["']/.test(lowerTag);
+    if (!hasAriaLabel && !hasAriaLabelledby) continue;
+
+    const hasExplicitRole = /\brole\s*=\s*["'][^"']*["']/.test(lowerTag);
+    const implicit = getImplicitRoleForTag(tagText, tagName);
+
+    // If there's no explicit role and no implicit role, flag this as a potential misuse
+    if (!hasExplicitRole && !implicit) {
+      smells.push(
+        `Element <code>&lt;${tagName}&gt;</code> has <code>aria-label</code> or <code>aria-labelledby</code> but no semantic role. Consider adding a role or using a native element (for example, <code>&lt;button&gt;</code>, <code>&lt;nav&gt;</code>, or <code>&lt;main&gt;</code>).`
+      );
+    }
+
+    // Step 3: detect elements that use BOTH aria-label and aria-labelledby
+    if (hasAriaLabel && hasAriaLabelledby) {
+      smells.push(
+        `Element <code>&lt;${tagName}&gt;</code> uses <code>aria-label</code> and <code>aria-labelledby</code> together. Elements should have a single accessible name source; choose one.`
+      );
+    }
+  }
+
+  // Empty aria-label or aria-labelledby (Step 2)
+  const emptyAriaRegex = /\b(aria-label|aria-labelledby)\s*=\s*["']\s*["']/gi;
+  let emptyMatch;
+  while ((emptyMatch = emptyAriaRegex.exec(snippet)) !== null) {
+    const attrName = emptyMatch[1];
+    smells.push(
+      `Attribute <code>${attrName}</code> is present but empty. Elements should not use an empty accessible name; provide meaningful text or remove the attribute.`
+    );
+  }
+
+  // Native <button> without an accessible name (no text, no aria-label/labelledby, no title)
+  const buttonRegex = /<button\b([^>]*)>([\s\S]*?)<\/button>/gi;
+  let buttonMatch;
+  while ((buttonMatch = buttonRegex.exec(snippet)) !== null) {
+    const attrs = buttonMatch[1] || "";
+    const inner = buttonMatch[2] || "";
+    const attrsLower = attrs.toLowerCase();
+
+    const hasAriaLabel = /\baria-label\s*=\s*["'][^"']*["']/.test(attrsLower);
+    const hasAriaLabelledby = /\baria-labelledby\s*=\s*["'][^"']*["']/.test(attrsLower);
+    const hasTitle = /\btitle\s*=\s*["'][^"']*["']/.test(attrsLower);
+
+    // Strip out any nested tags (e.g., <svg>, <img>) and whitespace to see if there's real text content
+    const innerWithoutTags = inner.replace(/<[^>]+>/g, "");
+    const innerText = innerWithoutTags.replace(/\s+/g, "");
+    const hasVisibleText = innerText.length > 0;
+
+    if (!hasVisibleText && !hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
+      smells.push(
+        'Native <code>&lt;button&gt;</code> does not have an accessible name. Add visible text inside the button, or use <code>aria-label</code>, <code>aria-labelledby</code>, or <code>title</code>.'
+      );
+    }
+  }
+
+  // Unlabeled interactive elements on generic containers (Step 1)
+  const interactiveTagRegex = /<([a-z0-9:-]+)\b[^>]*>/gi;
+  let interactiveMatch;
+  const interactiveRolesNeedingName = [
+    "button",
+    "link",
+    "switch",
+    "checkbox",
+    "radio",
+    "menuitem",
+    "menuitemcheckbox",
+    "menuitemradio",
+    "tab",
+    "option"
+  ];
+
+  while ((interactiveMatch = interactiveTagRegex.exec(snippet)) !== null) {
+    const tagText = interactiveMatch[0];
+    const tagName = interactiveMatch[1].toLowerCase();
+    const lowerTag = tagText.toLowerCase();
+
+    const roleMatch = lowerTag.match(/\brole\s*=\s*["']([^"']+)["']/i);
+    if (!roleMatch) continue;
+
+    const roleName = (roleMatch[1] || "").trim().toLowerCase();
+    if (!interactiveRolesNeedingName.includes(roleName)) continue;
+
+    // Skip native interactive elements that already have strong semantics
+    const nativeInteractiveTags = ["button", "a", "input", "textarea", "select", "option"];
+    if (nativeInteractiveTags.includes(tagName)) continue;
+
+    const hasAriaLabel = /\baria-label\s*=\s*["'][^"']*["']/.test(lowerTag);
+    const hasAriaLabelledby = /\baria-labelledby\s*=\s*["'][^"']*["']/.test(lowerTag);
+    const hasTitle = /\btitle\s*=\s*["'][^"']*["']/.test(lowerTag);
+
+    if (!hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
+      smells.push(
+        `Interactive element <code>&lt;${tagName}&gt;</code> with <code>role="${roleName}"</code> does not have an accessible name. Add visible text, <code>aria-label</code>, or <code>aria-labelledby</code>.`
+      );
+    }
+  }
+
   validateAriaAgainstRoles(snippet, smells);
   detectRoleStructureIssues(snippet, smells);
   return smells;
@@ -793,6 +925,9 @@ function detectSmells(snippet) {
 // Store the most recent fix log globally
 let lastFixLog = [];
 
+// Attempts conservative autofixes such as removing redundant roles,
+// adding missing required ARIA attributes, and repairing simple structure.
+// Also writes human‑readable fix descriptions into lastFixLog.
 function generateFixedCode(snippet) {
   if (!snippet) {
     lastFixLog = [];
@@ -887,7 +1022,7 @@ function generateFixedCode(snippet) {
   return fixed;
 }
 
-function updateAriaStates(snippet) {
+function updateAriaStates(snippet, smellsForSnippet) {
   const ariaStatesReportEl = document.getElementById("ariaStatesReport");
   const raw = snippet || "";
   const trimmed = raw.trim();
@@ -912,13 +1047,13 @@ function updateAriaStates(snippet) {
     return;
   }
 
-  const smellsForSnippet = detectSmells(trimmed) || [];
+  const effectiveSmells = smellsForSnippet || detectSmells(trimmed) || [];
   const ariaIssuesEl = document.getElementById("smellReport");
 
   const items = attrs
     .map((a) => {
       const hint = ARIA_STATE_HINTS[a.name] || "ARIA attribute detected.";
-      const hasIssue = smellsForSnippet.some((msg) => msg.includes(`<code>${a.name}</code>`));
+      const hasIssue = effectiveSmells.some((msg) => msg.includes(`<code>${a.name}</code>`));
       const issueTag =
         hasIssue && ariaIssuesEl
           ? '<span class="aria-issue-tag">Potential issue – see ARIA issues.</span>'
@@ -934,7 +1069,7 @@ function updateAriaStates(snippet) {
     </ul>`;
 }
 
-function updateAriaIssues(snippet) {
+function updateAriaIssues(snippet, smellsForSnippet) {
   const ariaIssuesEl = document.getElementById("smellReport");
   if (!ariaIssuesEl) return;
 
@@ -949,7 +1084,7 @@ function updateAriaIssues(snippet) {
     return;
   }
 
-  const smells = detectSmells(trimmed);
+  const smells = smellsForSnippet || detectSmells(trimmed);
 
   if (!smells.length) {
     ariaIssuesEl.innerHTML = `
@@ -990,14 +1125,31 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+// Main UI controller:
+// - Reads the user snippet
+// - Runs smell detection once
+// - Updates all panels: role summary, highlighted code, fixed code,
+//   ARIA states, ARIA issues
+// - Handles change log and copy‑to‑clipboard wiring.
 function updateUI() {
   const rawSnippet = snippetEl ? snippetEl.value : "";
   const snippet = rawSnippet.trim();
 
+  const smellsForSnippet = detectSmells(snippet) || [];
+
+  // Build a set of ARIA attribute names that have issues so we can highlight them in the code view
+  const problematicAriaNames = new Set();
+  smellsForSnippet.forEach((msg) => {
+    const m = msg.match(/<code>(aria-[a-z0-9_-]+)<\/code>/i);
+    if (m && m[1]) {
+      problematicAriaNames.add(m[1].toLowerCase());
+    }
+  });
+
   if (!roleSummaryEl || !codeSuggestionEl) {
     // Required containers not present; still update ARIA panels so the tool is usable.
-    updateAriaStates(rawSnippet);
-    updateAriaIssues(rawSnippet);
+    updateAriaStates(rawSnippet, smellsForSnippet);
+    updateAriaIssues(rawSnippet, smellsForSnippet);
     return;
   }
 
@@ -1018,8 +1170,8 @@ function updateUI() {
       fixedCodeEl.classList.add("empty-state");
       fixedCodeEl.innerHTML = `When we detect issues or missing roles/ARIA attributes, we’ll generate a corrected version of your snippet here.`;
     }
-    updateAriaStates(rawSnippet);
-    updateAriaIssues(rawSnippet);
+    updateAriaStates(rawSnippet, smellsForSnippet);
+    updateAriaIssues(rawSnippet, smellsForSnippet);
     return;
   }
 
@@ -1178,7 +1330,14 @@ function updateUI() {
   // Highlight ARIA states and properties like aria-expanded="true"
   highlighted = highlighted.replace(
     /\b(aria-[a-z0-9_-]+)=&quot;([^&]*)&quot;/gi,
-    `<span class="highlight-aria">$1=&quot;$2&quot;</span>`
+    (full, name, value) => {
+      const lowerName = String(name).toLowerCase();
+      const base = `${name}=&quot;${value}&quot;`;
+      if (problematicAriaNames.has(lowerName)) {
+        return `<span class="highlight-aria highlight-aria-error">${base}</span>`;
+      }
+      return `<span class="highlight-aria">${base}</span>`;
+    }
   );
 
   codeSuggestionEl.innerHTML = `
@@ -1291,8 +1450,8 @@ function updateUI() {
     }
   }
 
-  updateAriaStates(rawSnippet);
-  updateAriaIssues(rawSnippet);
+  updateAriaStates(rawSnippet, smellsForSnippet);
+  updateAriaIssues(rawSnippet, smellsForSnippet);
 }
 
 function applyTheme(theme) {

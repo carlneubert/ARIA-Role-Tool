@@ -1,5 +1,11 @@
 # ARIA Role Helper – Developer Notes
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue)
+![Made with JavaScript](https://img.shields.io/badge/Made%20with-JavaScript-F7DF1E)
+![ARIA Focused](https://img.shields.io/badge/Accessibility-ARIA%20Focused-0A66C2)
+
 This project is a small in-browser tool that analyzes custom components, detects ARIA roles, ARIA states, missing semantics, and potential accessibility issues. It also automatically generates “fixed code” and includes a change log of what was corrected.
 
 ---
@@ -48,7 +54,7 @@ Every automatic fix is recorded and shown as a bulleted list so users understand
 │── index.html
 │── style.css
 │── script.js
-│── readme.txt        ← this file
+│── README.md        ← this file
 ```
 
 ---
@@ -103,6 +109,15 @@ Current behavior:
 - If **fixes do exist**, the full preview, GitHub‑style copy button, and change log accordion are displayed
 
 This makes the output more intuitive and reinforces when the autofixer actually made improvements.
+
+#### **3. Accessible‑Name Detection for Interactive Elements**
+We added logic to detect when interactive elements (such as `<button>`, elements with click handlers, or custom controls) do not provide an accessible name. This now includes:
+- Detecting icon‑only buttons (`<button><svg></svg></button>`)
+- Warning when `aria-label` is applied to elements without an appropriate role
+- Highlighting violations in the fixed‑code preview
+- Surfacing guidance in the ARIA issues panel
+
+This ensures components expose a valid accessible name via visible text, `aria-label`, `aria-labelledby`, or `title`.
 
 ---
 
@@ -188,6 +203,14 @@ Use these snippets to verify that role detection, ARIA state detection, suggeste
 <div role="slider" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7">Volume</div>
 ```
 
+### **G. Accessible Name Tests**
+```
+<button><svg></svg></button>
+```
+```
+<div onclick="save()"><svg></svg></div>
+```
+
 This suite ensures coverage of redundant roles, ARIA state fixes, structural warnings, implicit/explicit role mapping, light/dark mode styling, and corrected code generation.
 
 ---
@@ -209,6 +232,12 @@ Planned enhancements for future versions of the ARIA Role Helper:
 ### **🔹 Additional Fixers**
 - ✓ Auto-add `role="tablist"` when wrapping elements with `role="tab"`
 - ✓ Only show fixed code when actual autofixes were applied
+- Auto-add `aria-expanded` based on detected disclosure patterns  
+- ✓ Accessible-name detection for icon-only or label-less interactive elements
+- ✓ Highlight aria-label misuse on elements without roles
+- ✓ Prevent showing fixed code panel when no changes were applied
+- ✓ Performance improvements: detectSmells now runs once per input
+- ✓ Architecture documentation added to script.js
 - Auto-add `aria-expanded` based on detected disclosure patterns  
 - Normalize `aria-pressed` usage on toggle buttons  
 - Validate required child roles (`tab` → `tabpanel`, `listbox` → `option`, etc.)  
@@ -264,5 +293,21 @@ Please keep contributions:
 - Keyboard accessibility patterns: https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets  
 - Native HTML semantics guide: https://developer.mozilla.org/en-US/docs/Web/HTML/Element  
 
+---
 
-This README will continue evolving as new features and fixers are added.
+## 🏗 Developer Architecture Overview
+
+The ARIA logic is now divided into three layers:
+
+### **1. Reference Data (static)**
+Role metadata, ARIA attribute rules, role relationships.
+
+### **2. Pure Logic Functions**
+`detectSmells`, `generateFixedCode`, role inference helpers.  
+These contain no DOM access and are safe to reuse or test independently.
+
+### **3. UI Layer**
+`updateUI`, clipboard handlers, accordion logic, theme toggling.  
+These functions take the results of the ARIA logic and render the interactive panels.
+
+This separation improves performance and helps contributors understand where to add new rules or fixers.
