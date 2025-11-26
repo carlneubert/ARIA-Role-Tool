@@ -1,3 +1,5 @@
+# ARIA Guidance Tool
+
 <p align="left">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
