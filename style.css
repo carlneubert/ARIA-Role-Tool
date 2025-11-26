@@ -157,9 +157,6 @@ header h1 {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.panel + .panel {
-  margin-top: 1.25rem; /* add a bit of breathing room between major sections */
-}
 
 .panel:last-of-type {
   border-bottom: none;
@@ -690,7 +687,7 @@ html[data-theme="light"] .mdn-link:focus {
 .layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: 0.60rem;
   align-items: flex-start;
   width: 100%;
 }
