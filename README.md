@@ -41,4 +41,93 @@ This layer handles:
 
 This file does *not* contain ARIA logic anymore.
 
-This modular breakdown makes the project easier to maintain, test, and extend as more ARIA rules or fixers are added.
+
+---
+
+## 📝 Contributor Notes
+
+If you're contributing to this project or extending its features, keep in mind:
+
+### **1. No ARIA logic belongs in `script.js`**
+All ARIA‑specific logic must live inside:
+- `/aria-data.js`
+- `/aria-logic.js` (or its future submodules)
+
+`script.js` should only orchestrate:
+- UI updates
+- highlight logic
+- events
+- theme interactions
+- clipboard and accordion behavior
+
+### **2. Pure functions stay pure**
+Anything in `aria-logic.js` must:
+- Accept input, return output  
+- Avoid reading or modifying the DOM  
+- Avoid mutating global state (`lastFixLog` is the only exception)
+
+This keeps the system testable and predictable.
+
+### **3. When adding new ARIA rules**
+Add reference rules to:
+- `ARIA_ROLES`  
+- `ARIA_STATE_HINTS`
+- `ROLE_REQUIRED_ARIA`
+- `ROLE_DISCOURAGED_ARIA`
+
+Add new detection logic to:
+- `AriaChecks` namespace
+
+Add autofixes (if safe!) to:
+- `AriaFixes`
+
+### **4. If splitting into more modules**
+We will eventually break `aria-logic.js` into:
+
+```
+/aria-parse.js     // structural + attribute extraction
+/aria-checks.js    // smell detection + semantic validation
+/aria-fixes.js     // autofix behavior
+```
+
+These namespaces already exist and can be moved file‑by‑file when ready.
+
+---
+
+## 🧭 Architecture Diagram
+
+Below is a simple high‑level diagram showing how pieces interact:
+
+```
+                 ┌─────────────────────┐
+                 │     aria-data.js    │
+                 │  Static ARIA rules  │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │    aria-logic.js    │
+                 │  AriaParse          │
+                 │  AriaChecks         │
+                 │  AriaFixes          │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │      script.js      │
+                 │  UI rendering       │
+                 │  highlighting       │
+                 │  events + theme     │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │      index.html     │
+                 │   User Interface    │
+                 └─────────────────────┘
+```
+
+This diagram reflects the flow:
+- Data → Logic → UI → User
+
+---
