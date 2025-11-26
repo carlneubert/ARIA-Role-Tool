@@ -157,6 +157,10 @@ header h1 {
   border-bottom: 1px solid var(--border-subtle);
 }
 
+.panel + .panel {
+  margin-top: 1.25rem; /* add a bit of breathing room between major sections */
+}
+
 .panel:last-of-type {
   border-bottom: none;
 }
@@ -530,9 +534,8 @@ html[data-theme="light"] .change-log-toggle:focus-visible {
   border-radius: 6px;
   padding: 0.25rem 0.6rem;
   font-size: 0.7rem;
-  border: 1px solid #4b5563;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
+  border: 1px solid #1f2937;
+  background: #111827;       /* navy by default */
   color: #f9fafb;
   cursor: pointer;
   transition: background 0.15s ease-out, border-color 0.15s ease-out;
@@ -551,16 +554,16 @@ html[data-theme="light"] .change-log-toggle:focus-visible {
 }
 
 html[data-theme="light"] .copy-fixed-btn {
-  background: rgba(0, 0, 0, 0.35);
-  border-color: #4b5563;
-  color: #fff;
+  background: #e5e7eb;  /* light grey pill in light mode */
+  border-color: #111827; /* navy border */
+  color: #111827;        /* navy text */
 }
 
 html[data-theme="light"] .copy-fixed-btn:hover,
 html[data-theme="light"] .copy-fixed-btn:focus-visible {
-  background: #4b5563;
-  border-color: #4b5563;
-  color: #fff;
+  background: #d1d5db;     /* slightly darker grey on hover */
+  border-color: #111827;   /* keep navy border */
+  color: #111827;          /* navy text */
 }
 
 /* ---- COPY ROW ---- */
@@ -579,8 +582,9 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
   padding: 0.3rem 0.9rem;
   background: var(--button-bg);
   color: var(--button-text);
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  font-size: 0.82rem;        /* slightly larger for readability */
+  letter-spacing: 0.05em;    /* reduce spacing for cleaner typography */
+  font-weight: 500;          /* improve legibility */
 }
 
 .copy-row button:focus-visible {
@@ -592,9 +596,20 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
   background: var(--button-bg-hover);
 }
 
+html[data-theme="light"] .copy-row button {
+  background: #111827; /* dark navy for strong contrast in light mode */
+  color: #f9fafb;      /* light text on dark button */
+}
+
+html[data-theme="light"] .copy-row button:hover {
+  background: #020617; /* slightly deeper on hover, still high contrast */
+}
+
 .copy-status {
-  font-size: .8rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
+  opacity: 0.85;
+  margin-top: 0.15rem;
 }
 
 /* ---- FOOTER ---- */
@@ -609,6 +624,12 @@ html[data-theme="light"] .copy-fixed-btn:focus-visible {
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.app-footer-version {
+  font-weight: 500;
+  opacity: 0.9;
+  white-space: nowrap;
 }
 
 
@@ -711,11 +732,11 @@ label {
 /* ---- EMPTY STATES & WARNINGS ---- */
 .empty-state {
   font-size: 0.9rem;
-  color: var(--text);
-  padding: 0.35rem 0;
-  border: none;
+  color: var(--text-muted);
+  padding: 0.45rem 0;
   background: transparent;
-  line-height: 1.6;
+  line-height: 1.65;
+  opacity: 0.9;
 }
 
 

@@ -1,5 +1,8 @@
 # ARIA Role Helper – Developer Notes
 
+**Version:** 0.1.0  
+A lightweight ARIA analysis and autofix tool.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue)
@@ -212,6 +215,46 @@ Use these snippets to verify that role detection, ARIA state detection, suggeste
 ```
 
 This suite ensures coverage of redundant roles, ARIA state fixes, structural warnings, implicit/explicit role mapping, light/dark mode styling, and corrected code generation.
+
+---
+
+---
+
+## 🧪 Running the Tool Locally
+
+This project is intentionally lightweight—there is no build step.
+
+To run it locally:
+
+1. Clone or download this repository.
+2. Open `index.html` in a modern browser (Chrome, Edge, Safari, Firefox).
+3. Paste your HTML snippet into the input area.
+4. Click **Analyze ARIA** to see detected roles, states, issues, and the fixed code preview.
+
+There is no bundler or dev server required; everything runs directly in the browser.
+
+---
+
+## 🤝 Contributing Workflow
+
+If you’d like to experiment or contribute:
+
+1. **Start with a test snippet**  
+   Use or extend the snippets in the **🧪 Regression Test Suite** section of this README.
+
+2. **Add or update an ARIA rule**  
+   Follow the steps in **🧱 Adding a New ARIA Rule** and keep changes small and focused.
+
+3. **Verify behavior manually**  
+   - Paste your test snippet into the app
+   - Confirm the new smell, autofix, or highlight behaves as expected
+   - Make sure existing snippets still behave correctly
+
+4. **Document the change**  
+   - Add a short note under **🔧 Recently Added Fixers** or the roadmap
+   - Optionally add a new regression snippet to the test suite
+
+This project is intentionally kept simple and framework-free so people can learn from and iterate on the ARIA logic without a heavy toolchain.
 
 ---
 
