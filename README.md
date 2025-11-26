@@ -1,8 +1,14 @@
 <p align="left">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
-  <img alt="Accessibility Checked" src="https://img.shields.io/badge/Accessibility-Checked-blue.svg" />
+  <img alt="Accessibility Focused" src="https://img.shields.io/badge/Accessibility-Checked-blue.svg" />
   <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES6+-orange.svg" />
+  <img alt="GitHub stars" src="https://img.shields.io/github/stars/carlneubert/ARIA-Role-Tool?style=social" />
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/carlneubert/ARIA-Role-Tool" />
+  <img alt="Open issues" src="https://img.shields.io/github/issues/carlneubert/ARIA-Role-Tool" />
+  <img alt="Open pull requests" src="https://img.shields.io/github/issues-pr/carlneubert/ARIA-Role-Tool" />
+  <img alt="Built with love" src="https://img.shields.io/badge/Built%20with-%E2%9D%A4-ff69b4.svg" />
+  <img alt="WAI-ARIA focused" src="https://img.shields.io/badge/WAI--ARIA-focused-blueviolet" />
 </p>
 
 ---
