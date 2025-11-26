@@ -1,3 +1,12 @@
+<p align="left">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+  <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
+  <img alt="Accessibility Checked" src="https://img.shields.io/badge/Accessibility-Checked-blue.svg" />
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES6+-orange.svg" />
+</p>
+
+---
+
 ## 🏗 Developer Architecture Overview
 
 Now that the ARIA logic has been separated into multiple dedicated files, the tool is organized into clear, maintainable layers:
