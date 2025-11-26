@@ -520,3 +520,30 @@ function generateFixedCode(snippet) {
   lastFixLog = changes;
   return fixed;
 }
+
+// -----------------------------------------------------------------------------
+// ARIA Logic Namespaces (for future modularization)
+// -----------------------------------------------------------------------------
+// These objects group related logic so other scripts (or future modules)
+// can reference the ARIA tooling in a structured way without relying solely
+// on individual global functions.
+
+const AriaParse = {
+  extractAriaAttributes,
+  getImplicitRoleForTag
+};
+
+const AriaChecks = {
+  isValidAriaValue,
+  validateAriaAgainstRoles,
+  detectRoleStructureIssues,
+  addRoleSemanticsSmells,
+  addInteractionSmells,
+  addAccessibleNameSmells,
+  detectSmells
+};
+
+const AriaFixes = {
+  generateFixedCode,
+  getLastFixLog: () => lastFixLog
+};
