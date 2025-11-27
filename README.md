@@ -38,7 +38,9 @@ Paste code → Get guidance → Improve accessibility.
 ---
 
 ## 🚀 Live Demo
-**Coming soon:** GitHub Pages deployment.
+The ARIA Guidance Tool is live and available here:
+
+👉 https://carlneubert.github.io/ARIA-Role-Tool/
 
 ---
 
