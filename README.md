@@ -1,6 +1,7 @@
 # ARIA Guidance Tool
 
 <p align="left">
+  <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-blue.svg" />
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
   <img alt="Accessibility Focused" src="https://img.shields.io/badge/Accessibility-Checked-blue.svg" />
@@ -15,106 +16,142 @@
 
 ---
 
-## 🏗 Developer Architecture Overview
+## 🌟 Overview
+The **ARIA Guidance Tool** helps developers debug, validate, and improve accessibility by analyzing HTML snippets for:
 
-Now that the ARIA logic has been separated into multiple dedicated files, the tool is organized into clear, maintainable layers:
+- Incorrect or misused ARIA roles
+- Invalid ARIA states or values
+- Missing required ARIA attributes
+- Orphaned or structurally incorrect composite widgets
+- Redundant ARIA on semantic HTML
+- Accessible name issues
+- Missing or misapplied interactive semantics
+
+It also provides:
+- Suggested correct roles based on element behavior
+- Autofixed versions of your snippet
+- A human‑readable change log
+- Direct MDN links for each ARIA attribute
+
+Paste code → Get guidance → Improve accessibility.
+
+---
+
+## 🚀 Live Demo
+**Coming soon:** GitHub Pages deployment.
+
+---
+
+## ✨ Features
+- 🔍 **Automatic ARIA role detection**
+- 🔧 **Autofix suggestions** with highlighted changes
+- 🧭 **Full change log** explaining what was fixed and why
+- 📘 **Per‑ARIA MDN links**
+- 🎯 **Composite widget validation** (tabs, menus, listboxes, dialogs, trees, etc.)
+- 🌗 **Light & Dark Mode** with accessible contrast tokens
+- 🧩 **Semantic validation** (detects redundant or incorrect usage)
+- 🧠 **Accessible name analysis** (aria-label/labelledby rules)
+- 📋 **GitHub‑style copy button** for fixed code output
+- ♿ Fully keyboard navigable UI
+
+---
+
+## 📦 Installation (Optional for Devs)
+You can clone the project locally:
+
+```
+git clone https://github.com/carlneubert/ARIA-Role-Tool.git
+cd ARIA-Role-Tool
+```
+
+Open `index.html` in a browser.
+
+---
+
+## 💡 How It Works
+The tool analyzes your snippet in three phases:
+
+### **1. Parsing**
+- Extracts roles, states, and all attributes
+- Determines implicit roles from native HTML
+- Detects composite widget structures
+
+### **2. Validation**
+Checks against rule sets:
+- Required states
+- Disallowed states
+- Structural parent/child requirements
+- Missing accessible names
+- Redundant or illegal ARIA
+
+### **3. Autofix**
+Safely applies improvements:
+- Removes redundant roles
+- Adds missing required ARIA attributes
+- Corrects invalid boolean values
+- Inserts missing composite container roles
+- Builds a full change log of what was corrected
+
+---
+
+## 📘 Example
+Paste this:
+
+```html
+<button role="button" aria-pressed="maybe">Save</button>
+```
+
+You’ll get:
+- A warning that `role="button"` is redundant
+- An error that `aria-pressed="maybe"` is invalid
+- A fixed snippet:
+
+```html
+<button aria-pressed="false">Save</button>
+```
+
+And a change log explaining both corrections.
+
+---
+
+## 🏗 Developer Architecture Overview
+The tool follows a clear 3‑layer structure:
 
 ### **1. Reference Data (static)**
-All ARIA role metadata, state/attribute rules, and parent/child role relationships now live in:
 ```
 /aria-data.js
 ```
-This file exposes global constants such as:
+Contains:
 - `ARIA_ROLES`
 - `ARIA_STATE_HINTS`
 - `ROLE_REQUIRED_ARIA`
 - `ROLE_DISCOURAGED_ARIA`
 
 ### **2. Pure Logic Modules**
-ARIA logic has been broken into a dedicated file:
 ```
 /aria-logic.js
 ```
-This file contains only pure functions and no DOM access. Newly organized logic groups include:
+Contains namespaces:
+- `AriaParse`
+- `AriaChecks`
+- `AriaFixes`
 
-- `AriaParse` – extracting attributes, detecting implicit roles
-- `AriaChecks` – smell detection, role/state validation, structural checks
-- `AriaFixes` – autofix routines + change log tracking
-
-These functions are safe to reuse, test, or further split into multiple files.
+No DOM access. Fully testable.
 
 ### **3. UI Layer**
-The UI wiring now lives in:
 ```
 /script.js
 ```
-This layer handles:
-- Rendering detected roles, ARIA issues, and states
-- Highlighting snippets
-- Copy‑to‑clipboard behavior
-- The accordion change log
-- Theme toggling
-- Keyboard‑accessible UI behavior
-
-This file does *not* contain ARIA logic anymore.
-
-
----
-
-## 📝 Contributor Notes
-
-If you're contributing to this project or extending its features, keep in mind:
-
-### **1. No ARIA logic belongs in `script.js`**
-All ARIA‑specific logic must live inside:
-- `/aria-data.js`
-- `/aria-logic.js` (or its future submodules)
-
-`script.js` should only orchestrate:
-- UI updates
-- highlight logic
-- events
-- theme interactions
-- clipboard and accordion behavior
-
-### **2. Pure functions stay pure**
-Anything in `aria-logic.js` must:
-- Accept input, return output  
-- Avoid reading or modifying the DOM  
-- Avoid mutating global state (`lastFixLog` is the only exception)
-
-This keeps the system testable and predictable.
-
-### **3. When adding new ARIA rules**
-Add reference rules to:
-- `ARIA_ROLES`  
-- `ARIA_STATE_HINTS`
-- `ROLE_REQUIRED_ARIA`
-- `ROLE_DISCOURAGED_ARIA`
-
-Add new detection logic to:
-- `AriaChecks` namespace
-
-Add autofixes (if safe!) to:
-- `AriaFixes`
-
-### **4. If splitting into more modules**
-We will eventually break `aria-logic.js` into:
-
-```
-/aria-parse.js     // structural + attribute extraction
-/aria-checks.js    // smell detection + semantic validation
-/aria-fixes.js     // autofix behavior
-```
-
-These namespaces already exist and can be moved file‑by‑file when ready.
+Handles:
+- State/role rendering
+- Highlighting
+- Accordion
+- Theme toggle
+- Copy button
 
 ---
 
 ## 🧭 Architecture Diagram
-
-Below is a simple high‑level diagram showing how pieces interact:
-
 ```
                  ┌─────────────────────┐
                  │     aria-data.js    │
@@ -144,7 +181,28 @@ Below is a simple high‑level diagram showing how pieces interact:
                  └─────────────────────┘
 ```
 
-This diagram reflects the flow:
-- Data → Logic → UI → User
+---
+
+## 🤝 Contributing
+See `CONTRIBUTING.md` for full guidelines.
+
+We welcome:
+- ARIA rule contributions
+- UI improvements
+- Bug reports
+- New feature ideas
 
 ---
+
+## 📜 Changelog
+See [`CHANGELOG.md`](./CHANGELOG.md)
+
+---
+
+## 📄 License
+This project is licensed under the MIT License.
+
+---
+
+## ❤️ Acknowledgements
+Thanks to the accessibility community for continually pushing the web toward inclusive design.
